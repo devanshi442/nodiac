@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nodiac Studios</title>
+  <meta name="description" content="Nodiac Studios — graphic · tech · motion" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0a0a0a;  /* black */
+      --fg:#e6e6e6;  /* light grey */
+      --muted:#9a9a9a; /* mid grey */
+      --gridy: 0.25; /* noise opacity */
+      --glow: 0;     /* scroll-driven 0..1 */
+      --parallaxA: 0px;
+      --parallaxB: 0px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--fg); background:var(--bg); overflow-x:hidden;
+    }
+    a{color:var(--fg); text-decoration:none}
+    a:hover{opacity:.9}
+
+    /* ===== COSMOS-like moving background with gritty texture ===== */
+    .bg-wrap{
+      position:fixed; inset:0; overflow:hidden; z-index:-2; background:#000;
+    }
+    /* parallax layer: smoke poster (2nd image) */
+    .bg-layer.smoke{
+      position:absolute; inset:-10%; background-repeat:no-repeat; background-size:cover; background-position:center;
+      opacity:.18; filter:grayscale(1) contrast(1.2);
+      transform: translateY(var(--parallaxA));
+      transition: transform 0.03s linear;
+      /* Replace URL with your file path if needed.
+         Provided by you as the 2nd image: /mnt/data/413df8e8-9d3e-4bb6-b851-587573e4563b.png */
+      background-image:url('assets/bg-smoke.png');
+    }
+    /* huge logo watermark that brightens as you scroll */
+    .bg-logo{
+      position:absolute; inset:0; display:grid; place-items:center; pointer-events:none;
+      mix-blend-mode:screen; opacity: clamp(0.25, calc(0.2 + var(--glow)), 0.85);
+      filter: grayscale(1) brightness(calc(0.6 + var(--glow))) contrast(calc(1 + var(--glow)*.6));
+      transform: translateY(var(--parallaxB));
+      transition: transform 0.03s linear;
+    }
+    .bg-logo img{ width:min(70vmin,800px); height:auto; opacity:.9; filter: grayscale(1); }
+    /* subtle spotlight following scroll */
+    .spotlight{
+      position:absolute; inset:-20%; pointer-events:none; z-index:-1;
+      background: radial-gradient( 50% 40% at 50% calc(40% + var(--scrollY,0px) * .15), rgba(200,200,200,0.12), rgba(0,0,0,0) 60% );
+      mix-blend-mode:screen; opacity: calc(0.2 + var(--glow)*.6);
+    }
+
+    /* gritty noise overlay */
+    .grain{ position:fixed; inset:-50%; z-index:-1; opacity:var(--gridy); pointer-events:none; mix-blend-mode:overlay;}
+    .grain:before{
+      content:""; position:absolute; inset:0; background-size:200px 200px; animation:grain 6s steps(10) infinite;
+      /* Base64 tiny noise texture to avoid external files */
+      background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAQAAABx0wDUAAAAtUlEQVR42u3RMQEAIAwEsS/7r1nMfx5QJcYw7g0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB9z0m0AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPyYB2n6A9lN8O4AAAAASUVORK5CYII=');
+      filter:contrast(110%);
+    }
+    @keyframes grain{0%{transform:translate(0,0)}10%{transform:translate(-10%,-10%)}20%{transform:translate(-20%,10%)}30%{transform:translate(10%,-20%)}40%{transform:translate(-10%,20%)}50%{transform:translate(20%,10%)}60%{transform:translate(10%,0)}70%{transform:translate(0,10%)}80%{transform:translate(-10%,0)}90%{transform:translate(0,-10%)}100%{transform:translate(0,0)}}
+
+    /* ===== Layout ===== */
+    header{
+      position:sticky; top:0; z-index:10; backdrop-filter: blur(6px); background:rgba(0,0,0,.55);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav{max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:16px clamp(16px,3vw,24px);}
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.08em}
+    .brand img{width:28px; height:28px; filter:grayscale(1);}
+    .nav a{color:var(--fg); font-weight:600; margin-left:20px}
+
+    .hero{min-height:92vh; display:grid; place-items:center; text-align:center; padding:10vh 20px}
+    .hero h1{font-size:clamp(40px,10vw,120px); margin:0; line-height:.9; letter-spacing:-.02em; text-transform:uppercase}
+    .hero p{max-width:720px; margin:18px auto 0; color:var(--muted); font-size:clamp(14px,2.6vw,18px)}
+
+    section{max-width:1200px; margin:0 auto; padding:96px 20px}
+    .section-title{font-size:clamp(22px,4vw,36px); letter-spacing:.08em; text-transform:uppercase; margin-bottom:28px}
+
+    /* Our Designs */
+    .designs{display:grid; grid-template-columns: repeat(12, 1fr); gap:18px}
+    .card{grid-column: span 12; background:#0f0f0f; border:1px solid #1f1f1f; border-radius:20px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,.45)}
+    .card img{width:100%; display:block}
+    .card .meta{padding:14px 16px; color:#bdbdbd; font-size:14px}
+    @media(min-width:720px){
+      .card{grid-column: span 6}
+    }
+    @media(min-width:1040px){
+      .card{grid-column: span 4}
+    }
+
+    /* Footer */
+    footer{padding:40px 20px 80px; color:#b0b0b0; border-top:1px solid rgba(255,255,255,.06); background:rgba(0,0,0,.6)}
+    .foot{max-width:1200px; margin:0 auto; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px}
+    .link{opacity:.9}
+
+    /* Buttons */
+    .btn{
+      display:inline-block; padding:14px 18px; border-radius:999px; border:1px solid #2a2a2a; background:#111;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04); color:#e8e8e8; text-transform:uppercase; font-weight:700; letter-spacing:.1em; font-size:12px
+    }
+
+    /* Utility */
+    .muted{color:var(--muted)}
+    .spacer{height:20vh}
+  </style>
+</head>
+<body>
+  <!-- Background system -->
+  <div class="bg-wrap" aria-hidden="true">
+    <div class="bg-layer smoke"></div>
+    <div class="bg-logo">
+      <!-- Replace src with your provided 1st image (logo N).  Path hint: /mnt/data/0a41ecac-0efb-482a-a8ec-9b7d7bdb8796.png -->
+      <img src="assets/nodiac-logo.png" alt="Nodiac Studios Logo" />
+    </div>
+    <div class="spotlight"></div>
+    <div class="grain"></div>
+  </div>
+
+  <header>
+    <nav class="nav">
+      <div class="brand">
+        <img src="assets/nodiac-logo.png" alt="Nodiac" />
+        <a href="#top" aria-label="Nodiac Studios home">NODIAC STUDIOS</a>
+      </div>
+      <div>
+        <a href="#designs">Our Designs</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-label="Intro">
+      <div>
+        <h1>Nodiac Studios</h1>
+        <p>Graphic · Tech · Motion — Crafted in monochrome. A gritty, minimal aesthetic powered by movement. Scroll to illuminate the mark.</p>
+        <div style="margin-top:26px">
+          <a class="btn" href="http://www.nodiacstudios.com" target="_blank" rel="noopener">www.nodiacstudios.com</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="spacer"></div>
+
+    <section id="designs" aria-label="Our Designs">
+      <h2 class="section-title">Our Designs</h2>
+      <div class="designs">
+        <!-- 3rd image (Travis Scott poster) -->
+        <article class="card">
+          <!-- Path hint: /mnt/data/8f58ff6b-29b9-4e52-a2f9-728f044c2031.png -->
+          <img src="assets/design-01.png" alt="Design — Travis Scott Rodeo" />
+          <div class="meta">Poster exploration · Type & texture</div>
+        </article>
+        <!-- 4th image (minimal poster) -->
+        <article class="card">
+          <!-- Path hint: /mnt/data/afb37d0e-5cb1-4d6e-bf89-4ce0fa935022.png -->
+          <img src="assets/design-02.png" alt="Design — Minimal graphic layout" />
+          <div class="meta">Editorial layout · Grid play</div>
+        </article>
+        <!-- 5th image (event poster) -->
+        <article class="card">
+          <!-- Path hint: /mnt/data/fdea33f1-1ca4-445a-8c0d-cf18dca9147e.png -->
+          <img src="assets/design-03.png" alt="Design — Event Poster" />
+          <div class="meta">Event poster · Monochrome duotone</div>
+        </article>
+      </div>
+    </section>
+
+    <section id="contact" aria-label="Contact">
+      <h2 class="section-title">Contact</h2>
+      <p class="muted">For collaborations, commissions or inquiries, reach out at</p>
+      <p style="font-size:clamp(18px,3vw,24px); font-weight:800; letter-spacing:.06em; margin:.4em 0 1.6em;">nodiacstudios@gmail.com</p>
+      <a class="btn" href="mailto:nodiacstudios@gmail.com">Email Us</a>
+    </section>
+  </main>
+
+  <footer>
+    <div class="foot">
+      <div>© <span id="year"></span> Nodiac Studios. All rights reserved.</div>
+      <div class="link">www.nodiacstudios.com</div>
+    </div>
+  </footer>
+
+  <script>
+    const root = document.documentElement;
+    const docH = () => document.documentElement.scrollHeight - window.innerHeight;
+
+    function onScroll(){
+      const y = window.scrollY || window.pageYOffset;
+      const progress = Math.max(0, Math.min(1, y / Math.max(1, docH())));
+      root.style.setProperty('--glow', progress.toFixed(4));
+      root.style.setProperty('--scrollY', y + 'px');
+      // subtle parallax
+      root.style.setProperty('--parallaxA', (y * -0.06) + 'px');
+      root.style.setProperty('--parallaxB', (y * -0.12) + 'px');
+    }
+    document.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('resize', onScroll);
+    onScroll();
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
+
